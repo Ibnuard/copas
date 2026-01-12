@@ -9,7 +9,7 @@
 ## Demo
 
 ![Copas Demo](./demo.gif)  
-_Cukup tulis catatan, klik Simpan, dan dapatkan Original & Short URL dalam sekejap._
+_Cukup tulis catatan, klik Simpan, dan Selesai._
 
 ---
 

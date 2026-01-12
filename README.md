@@ -1,6 +1,6 @@
 # Copasin
 
-[![Website](https://img.shields.io/badge/Website-Live-blueviolet)](https://your-deployed-url.com)
+[![Website](https://img.shields.io/badge/Website-Live-blueviolet)](https://copasin.fun/)
 
 **Copasin** — Super lightweight, **serverless**, **no framework**, **no database**, dan **secured** web app untuk menyimpan catatan langsung di browser. Cepat, aman, dan praktis, tanpa perlu backend.
 

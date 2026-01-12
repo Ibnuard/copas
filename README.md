@@ -1,14 +1,14 @@
-# Copas
+# Copasin
 
 [![Website](https://img.shields.io/badge/Website-Live-blueviolet)](https://your-deployed-url.com)
 
-**Copas** — Super lightweight, **serverless**, **no framework**, **no database**, dan **secured** web app untuk menyimpan catatan langsung di browser. Cepat, aman, dan praktis, tanpa perlu backend.
+**Copasin** — Super lightweight, **serverless**, **no framework**, **no database**, dan **secured** web app untuk menyimpan catatan langsung di browser. Cepat, aman, dan praktis, tanpa perlu backend.
 
 ---
 
 ## Demo
 
-![Copas Demo](./demo.gif)  
+![Copasin Demo](./demo.gif)  
 _Cukup tulis catatan, klik Simpan, dan Selesai._
 
 ---
@@ -39,7 +39,7 @@ _Cukup tulis catatan, klik Simpan, dan Selesai._
 
 ## Cara Pakai
 
-1. Buka halaman Copas di browser.
+1. Buka halaman Copasin di browser.
 2. Tulis catatan di textarea.
 3. Klik **Simpan** → Original URL muncul langsung, Short URL dibuat otomatis.
 4. Salin URL atau bagikan via QR Code.

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Copas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="bg-neutral-950 text-neutral-200 min-h-screen flex justify-center p-4"
+  >
+    <div class="w-full max-w-3xl space-y-4">
+      <!-- Unlock Modal -->
+      <div
+        id="unlockModal"
+        class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+      >
+        <div
+          class="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4 w-[300px]"
+        >
+          <p class="text-sm text-neutral-300 text-center">
+            Masukkan kata sandi untuk membuka catatan
+          </p>
+          <input
+            id="unlockPass"
+            type="password"
+            class="w-full px-3 py-2 rounded-md bg-neutral-800 border border-neutral-700 text-sm"
+          />
+          <button
+            onclick="unlock()"
+            class="w-full px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-sm"
+          >
+            Buka
+          </button>
+          <p id="unlockErr" class="text-xs text-red-400 text-center hidden">
+            Kata sandi salah
+          </p>
+        </div>
+      </div>
+
+      <!-- QR Modal -->
+      <div
+        id="qrModal"
+        class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+      >
+        <div
+          class="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4 w-[280px]"
+        >
+          <p id="qrLabel" class="text-sm text-neutral-300 text-center"></p>
+          <div id="qrCanvas" class="flex justify-center"></div>
+          <div class="flex gap-2">
+            <button
+              onclick="downloadQR()"
+              class="flex-1 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-sm"
+            >
+              Unduh
+            </button>
+            <button
+              onclick="qrModal.classList.add('hidden')"
+              class="flex-1 px-4 py-2 rounded-md bg-neutral-800 hover:bg-neutral-700 text-sm"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="text-xl font-semibold">
+        <a href="./" class="hover:text-blue-400">Copas</a>
+      </h1>
+      <p class="text-sm text-neutral-400">
+        Copas adalah web untuk menyimpan catatan super lightweight — tanpa
+        database, tanpa server, dan dengan enkripsi penuh langsung di browser.
+      </p>
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Kata sandi (opsional)"
+        class="w-full px-3 py-2 rounded-md bg-neutral-900 border border-neutral-800 text-sm"
+      />
+      <p id="modeHint" class="text-xs text-neutral-500"></p>
+
+      <div id="editorHeader" class="flex justify-between items-center">
+        <span class="text-xs text-neutral-500">Isi catatan</span>
+        <button
+          onclick="resetAll()"
+          class="text-xs px-3 py-1 rounded-md bg-neutral-800 hover:bg-neutral-700"
+        >
+          ＋ Catatan Baru
+        </button>
+      </div>
+
+      <textarea
+        id="text"
+        class="w-full h-[32vh] resize-none rounded-lg bg-neutral-900 border border-neutral-800 p-4 text-sm"
+        placeholder="Tempelkan teks di sini..."
+      ></textarea>
+
+      <div id="actions" class="flex gap-2">
+        <button
+          id="saveBtn"
+          onclick="share()"
+          class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-sm"
+        >
+          Simpan
+        </button>
+      </div>
+
+      <div id="viewActions" class="hidden flex gap-2">
+        <button
+          onclick="copyNote()"
+          class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-sm"
+          id="copyNoteBtn"
+        >
+          Salin Catatan
+        </button>
+      </div>
+
+      <div id="resultContainer" class="hidden mt-3 space-y-3">
+        <div
+          id="urlWarning"
+          class="bg-amber-950/30 border border-amber-800/50 rounded-lg p-3"
+        >
+          <p class="text-xs text-amber-200/90">
+            ⚠️ <strong>Penting:</strong> Short URL hanya valid selama
+            <strong>7 hari</strong>. Setelah itu, gunakan Original URL untuk
+            mengakses catatan Anda.
+          </p>
+        </div>
+
+        <div id="shortUrlContainer">
+          <label class="text-xs text-neutral-400">Short URL</label>
+          <div class="flex gap-2 mt-1">
+            <input
+              id="shortUrl"
+              readonly
+              class="flex-1 px-3 py-2 rounded-md bg-neutral-900 border border-neutral-800 text-xs"
+              placeholder="Sedang membuat Short URL…"
+            />
+            <button
+              onclick="copyShortUrl()"
+              class="px-3 py-2 bg-blue-600 rounded-md text-sm hover:bg-blue-500"
+              id="copyShortBtn"
+            >
+              Copy
+            </button>
+            <button
+              onclick="showQRShort()"
+              class="px-3 py-2 bg-blue-600 rounded-md text-sm hover:bg-blue-500"
+            >
+              QR
+            </button>
+          </div>
+        </div>
+
+        <div id="originalUrlContainer">
+          <label class="text-xs text-neutral-400">Original URL</label>
+          <div class="flex gap-2 mt-1">
+            <input
+              id="originalUrl"
+              readonly
+              class="flex-1 px-3 py-2 rounded-md bg-neutral-900 border border-neutral-800 text-xs"
+            />
+            <button
+              onclick="copyOriginalUrl()"
+              class="px-3 py-2 bg-blue-600 rounded-md text-sm hover:bg-blue-500"
+              id="copyOriginalBtn"
+            >
+              Copy
+            </button>
+            <button
+              onclick="showQROriginal()"
+              class="px-3 py-2 bg-blue-600 rounded-md text-sm hover:bg-blue-500"
+            >
+              QR
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const WORKER = "https://pendekin.azxarblog.workers.dev";
+
+      const password = document.getElementById("password");
+      const hint = document.getElementById("modeHint");
+      const textarea = document.getElementById("text");
+      const editorHeader = document.getElementById("editorHeader");
+      const actions = document.getElementById("actions");
+      const unlockModal = document.getElementById("unlockModal");
+      const unlockPass = document.getElementById("unlockPass");
+      const unlockErr = document.getElementById("unlockErr");
+      const qrModal = document.getElementById("qrModal");
+      const qrCanvas = document.getElementById("qrCanvas");
+      const qrLabel = document.getElementById("qrLabel");
+
+      const resultContainer = document.getElementById("resultContainer");
+      const shortUrlInput = document.getElementById("shortUrl");
+      const originalUrlInput = document.getElementById("originalUrl");
+      const copyShortBtn = document.getElementById("copyShortBtn");
+      const copyOriginalBtn = document.getElementById("copyOriginalBtn");
+      const viewActions = document.getElementById("viewActions");
+      const copyNoteBtn = document.getElementById("copyNoteBtn");
+      const urlWarning = document.getElementById("urlWarning");
+      const originalUrlContainer = document.getElementById(
+        "originalUrlContainer"
+      );
+
+      password.addEventListener("input", () => {
+        hint.textContent = password.value
+          ? "🔑 Mode Password — pembaca harus memasukkan kata sandi untuk membuka"
+          : "🔐 Mode Auto-Generate — Copas membuat kunci rahasia di URL";
+      });
+      password.dispatchEvent(new Event("input"));
+
+      function randomKey() {
+        return crypto
+          .getRandomValues(new Uint8Array(32))
+          .reduce((s, b) => s + b.toString(16).padStart(2, "0"), "");
+      }
+      function b64(b) {
+        return btoa(String.fromCharCode(...new Uint8Array(b)));
+      }
+      function ub64(b) {
+        return Uint8Array.from(atob(b), (c) => c.charCodeAt(0));
+      }
+
+      async function getKey(p, s) {
+        const e = new TextEncoder();
+        const b = await crypto.subtle.importKey(
+          "raw",
+          e.encode(p),
+          "PBKDF2",
+          false,
+          ["deriveKey"]
+        );
+        return crypto.subtle.deriveKey(
+          { name: "PBKDF2", salt: s, iterations: 100000, hash: "SHA-256" },
+          b,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["encrypt", "decrypt"]
+        );
+      }
+
+      async function encrypt(t, k) {
+        const s = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await getKey(k, s);
+        const e = await crypto.subtle.encrypt(
+          { name: "AES-GCM", iv },
+          key,
+          new TextEncoder().encode(t)
+        );
+        return LZString.compressToEncodedURIComponent(
+          JSON.stringify({ d: b64(e), s: b64(s), i: b64(iv) })
+        );
+      }
+
+      async function decrypt(p, k) {
+        const raw = LZString.decompressFromEncodedURIComponent(p);
+        if (!raw) throw new Error("Invalid data");
+        let o;
+        try {
+          o = JSON.parse(raw);
+        } catch {
+          throw new Error("Invalid encrypted payload");
+        }
+        if (!o.d || !o.s || !o.i) throw new Error("Malformed data");
+        const key = await getKey(k, ub64(o.s));
+        let decrypted;
+        try {
+          decrypted = await crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: ub64(o.i) },
+            key,
+            ub64(o.d)
+          );
+        } catch {
+          throw new Error("Wrong password or corrupted data");
+        }
+        return new TextDecoder().decode(decrypted);
+      }
+
+      // ----- share -----
+      async function share() {
+        if (!textarea.value.trim()) return;
+        const key = password.value || randomKey();
+        const encrypted = await encrypt(textarea.value, key);
+
+        resultContainer.classList.remove("hidden");
+
+        const originalUrl =
+          location.origin +
+          location.pathname +
+          "#d=" +
+          encrypted +
+          (password.value ? "" : "&k=" + key);
+
+        const isUrlTooLong = originalUrl.length > 2000;
+
+        if (isUrlTooLong) {
+          originalUrlContainer.classList.add("hidden");
+          urlWarning.innerHTML = `
+            <p class="text-xs text-amber-200/90">
+              ⚠️ <strong>Catatan terlalu panjang:</strong> Short URL hanya valid selama <strong>7 hari</strong>.
+            </p>
+          `;
+        } else {
+          originalUrlContainer.classList.remove("hidden");
+          originalUrlInput.value = originalUrl;
+          urlWarning.innerHTML = `
+            <p class="text-xs text-amber-200/90">
+              ⚠️ <strong>Penting:</strong> Short URL hanya valid selama <strong>7 hari</strong>. Setelah itu, gunakan Original URL untuk mengakses catatan Anda.
+            </p>
+          `;
+        }
+
+        shortUrlInput.value = "Sedang membuat Short URL…";
+        fetch(WORKER + "/save", { method: "POST", body: encrypted })
+          .then((r) => r.text())
+          .then((id) => {
+            const shortUrl =
+              location.origin +
+              location.pathname +
+              "#id=" +
+              id +
+              (password.value ? "" : "&k=" + key);
+            shortUrlInput.value = shortUrl;
+          })
+          .catch(() => (shortUrlInput.value = "❌ Gagal membuat Short URL"));
+      }
+
+      // ----- copy with interaction -----
+      function copyText(elem, btn) {
+        navigator.clipboard.writeText(elem.value);
+        const old = btn.textContent;
+        btn.textContent = "Tersalin ✓";
+        setTimeout(() => (btn.textContent = old), 1200);
+      }
+
+      function copyShortUrl() {
+        copyText(shortUrlInput, copyShortBtn);
+      }
+      function copyOriginalUrl() {
+        copyText(originalUrlInput, copyOriginalBtn);
+      }
+
+      function copyNote() {
+        navigator.clipboard.writeText(textarea.value);
+        const old = copyNoteBtn.textContent;
+        copyNoteBtn.textContent = "Tersalin ✓";
+        setTimeout(() => (copyNoteBtn.textContent = old), 1200);
+      }
+
+      // ----- QR functions -----
+      function showQR(url, label) {
+        qrCanvas.innerHTML = "";
+        qrLabel.textContent = label;
+        new QRCode(qrCanvas, { text: url, width: 220, height: 220 });
+        qrModal.classList.remove("hidden");
+      }
+      function showQRShort() {
+        showQR(shortUrlInput.value, "QR Short URL");
+      }
+      function showQROriginal() {
+        showQR(originalUrlInput.value, "QR Original URL");
+      }
+
+      // ----- reset -----
+      function resetAll() {
+        location.href = location.pathname;
+      }
+
+      // ----- unlock -----
+      async function unlock() {
+        try {
+          const t = await decrypt(window._data, unlockPass.value);
+          textarea.value = t;
+          unlockModal.classList.add("hidden");
+        } catch {
+          unlockErr.classList.remove("hidden");
+        }
+      }
+
+      // ----- view-only mode -----
+      const hash = new URLSearchParams(location.hash.slice(1));
+      const id = hash.get("id");
+      const keyParam = hash.get("k");
+      const dParam = hash.get("d");
+
+      if (id || dParam) {
+        actions.remove();
+        textarea.readOnly = true;
+        password?.remove();
+        hint?.remove();
+        editorHeader.remove();
+        viewActions.classList.remove("hidden");
+        resultContainer.remove();
+
+        if (dParam) {
+          if (keyParam) {
+            decrypt(dParam, keyParam)
+              .then((t) => (textarea.value = t))
+              .catch(() => (textarea.value = "❌ Data salah atau korup"));
+          } else {
+            window._data = dParam;
+            unlockModal.classList.remove("hidden");
+          }
+        }
+
+        if (id) {
+          textarea.placeholder = "Sedang melakukan decrypt...";
+
+          fetch(WORKER + "/" + id)
+            .then((r) => (r.ok ? r.text() : Promise.reject()))
+            .then((enc) => {
+              if (keyParam) {
+                decrypt(enc, keyParam)
+                  .then((t) => {
+                    textarea.placeholder = "";
+                    if (!textarea.value) textarea.value = t;
+                  })
+                  .catch(() => {
+                    textarea.placeholder = "";
+                    if (!textarea.value)
+                      textarea.value = "Data salah atau korup";
+                  });
+              } else {
+                textarea.placeholder = "";
+                window._data = enc;
+                unlockModal.classList.remove("hidden");
+              }
+            })
+            .catch(() => {
+              textarea.placeholder = "";
+              textarea.value = "Tidak dapat mengambil data";
+            });
+        }
+      }
+    </script>
+  </body>
+</html>

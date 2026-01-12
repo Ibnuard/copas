@@ -1,6 +1,5 @@
 # Copas
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-Live-blueviolet)](https://your-deployed-url.com)
 
 **Copas** — Super lightweight, **serverless**, **no database**, dan **secured** web app untuk menyimpan catatan langsung di browser. Cepat, aman, dan praktis, tanpa perlu backend.
@@ -9,7 +8,7 @@
 
 ## Demo
 
-![Copas Demo](https://media.giphy.com/media/3o7aD6N1a5fE9v5e9w/giphy.gif)  
+![Copas Demo](./demo.gif)  
 _Cukup tulis catatan, klik Simpan, dan dapatkan Original & Short URL dalam sekejap._
 
 ---
